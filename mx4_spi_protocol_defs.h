@@ -317,7 +317,7 @@ static const mx4_u32_t mx4_spi_sync_frame_size = sizeof (mx4_spi_sync_frame);
 
 #define PROT_TYPE_EVENT_INPUTS                  0xf6
 #define PROT_TYPE_POLLED                        0xf7
-#define PROT_TYPE_INVALID§                      0xff
+#define PROT_TYPE_INVALID                       0xff
 
 //Generic bit access convenience macros
 #define MX4_READ_INT_BIT(integer, index)\
