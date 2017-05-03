@@ -28,8 +28,6 @@
 #include <linux/sched.h>
 #include <linux/spi/spi.h>
 
-#include "mx4_preprocessor_add_hack.h"
-
 #define MX4_LINUX_KERNEL_SPACE 1 //to *_spi_protocol_defs.h
 
 #include "mx4_spi_protocol_defs.h"
