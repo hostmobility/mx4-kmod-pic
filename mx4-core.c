@@ -837,7 +837,7 @@ static void __exit mx4_io_exit (void)
 }
 module_exit(mx4_io_exit);
 
-MODULE_AUTHOR ("Host Mobility");
-MODULE_DESCRIPTION ("mx4 io");
+MODULE_AUTHOR ("Mirza Krak <mirza.krak@hostmobility.com>");
+MODULE_DESCRIPTION ("mx4 multiprocessor communication");
 MODULE_LICENSE ("GPLv2");
 MODULE_VERSION (DRIVER_VERSION);
