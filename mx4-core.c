@@ -839,5 +839,5 @@ module_exit(mx4_io_exit);
 
 MODULE_AUTHOR ("Host Mobility");
 MODULE_DESCRIPTION ("mx4 io");
-MODULE_LICENSE ("GPL");
+MODULE_LICENSE ("GPLv2");
 MODULE_VERSION (DRIVER_VERSION);
