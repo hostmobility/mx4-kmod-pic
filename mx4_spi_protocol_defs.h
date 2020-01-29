@@ -150,6 +150,14 @@ static const mx4_u32_t mx4_spi_sync_frame_size = sizeof (mx4_spi_sync_frame);
 #define PROT_TYPE_ANALOG_OUT_2                  0x15
 #define PROT_TYPE_ANALOG_OUT_3                  0x16
 #define PROT_TYPE_ANALOG_OUT_4                  0x17
+#define PROT_TYPE_S_DIGITAL_OUT_1               0x18
+#define PROT_TYPE_S_DIGITAL_OUT_2               0x19
+#define PROT_TYPE_S_DIGITAL_OUT_3               0x1A
+#define PROT_TYPE_S_DIGITAL_OUT_4               0x1B
+#define PROT_TYPE_S_DIGITAL_OUT_5               0x1C
+#define PROT_TYPE_S_DIGITAL_OUT_6               0x1D
+#define PROT_TYPE_S_DIGITAL_OUT_7               0x1E
+#define PROT_TYPE_DIG_OUT_EN	                0x1F
 
 #define PROT_TYPE_INPUT_ANALOG_3                0x20
 #define PROT_TYPE_INPUT_ANALOG_4                0x21
