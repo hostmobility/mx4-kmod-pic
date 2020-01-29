@@ -1,10 +1,19 @@
 /*
- * Copyright (C) 2017 Host Mobility AB. All rights reserved.
- *
- * This file is licensed under the terms of the GNU General Public
- * License version 2. This program is licensed "as is" without any
- * warranty of any kind, whether express or implied.
- */
++++                                                              +++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++++                                                              +++
++++   COPYRIGHT (c)  HostMobility AB                             +++
++++                                                              +++
++++ The copyright to the computer Program(s) herein is the       +++
++++ property of HostMobility, Sweden. The program(s) may be      +++
++++ used and or copied only with the written permission of       +++
++++ HostMobility, or in accordance with the terms and            +++
++++ conditions stipulated in the agreement contract under        +++
++++ which the program(s) have been supplied                      +++
++++                                                              +++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++++                                                              +++
+*/
 
 #include "mx4-core.h"
 
@@ -312,6 +321,8 @@ def_read_write_integer_attr (ctrl_rs485_enable, PROT_TYPE_CTRL_RS485_ENABLE);
 def_read_write_integer_attr (ctrl_rs422_mode, PROT_TYPE_CTRL_RS422_MODE);
 def_read_write_integer_attr (ctrl_rs422_loopback, PROT_TYPE_CTRL_RS422_LOOPBACK);
 
+def_write_integer_attr(ctrl_reset_pic_sw, PROT_TYPE_SW_RESET);
+
 def_read_write_integer_attr (ctrl_serial_nr, PROT_TYPE_CTRL_SERIAL);
 def_read_write_integer_attr (ctrl_hw_rev, PROT_TYPE_CTRL_HW_REV);
 def_read_write_integer_attr (ctrl_product_id, PROT_TYPE_CTRL_PRODUCT_ID);
@@ -330,6 +341,10 @@ def_read_write_integer_attr (rtc_dow, PROT_TYPE_RTC_DOW);
 def_read_write_integer_attr (rtc_hour, PROT_TYPE_RTC_HOURS);
 def_read_write_integer_attr (rtc_minute, PROT_TYPE_RTC_MINUTES);
 def_read_write_integer_attr (rtc_second, PROT_TYPE_RTC_SECONDS);
+
+def_read_write_integer_attr (debug_data, PROT_TYPE_DEBUG_DATA);
+
+def_read_write_integer_attr (power_5v_perm, PROT_TYPE_POWER_ON_5V_PERM);
 
 #define MX4_CONCAT_IMPL(a, b) a##b
 #define MX4_CONCAT(a, b) MX4_CONCAT_IMPL(a, b)
@@ -435,6 +450,9 @@ static struct attribute *mx4_attributes[] = {
 	&dev_attr_ctrl_power_state.attr,
 	&dev_attr_ctrl_led_power_off.attr,
 
+	&dev_attr_ctrl_reset_pic_sw.attr,
+	&dev_attr_power_5v_perm.attr,
+	
 	&dev_attr_ctrl_serial_nr.attr,
 	&dev_attr_ctrl_hw_rev.attr,
 	&dev_attr_ctrl_product_id.attr,
@@ -462,6 +480,8 @@ static struct attribute *mx4_attributes[] = {
 	&dev_attr_rtc_hour.attr,
 	&dev_attr_rtc_minute.attr,
 	&dev_attr_rtc_second.attr,
+
+	&dev_attr_debug_data.attr,
 		//functions
 	&dev_attr_drv_remove_exported_gpios.attr,
 

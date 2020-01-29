@@ -1,10 +1,19 @@
 /*
- * Copyright (C) 2017 Host Mobility AB. All rights reserved.
- *
- * This file is licensed under the terms of the GNU General Public
- * License version 2. This program is licensed "as is" without any
- * warranty of any kind, whether express or implied.
- */
++++                                                              +++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++++                                                              +++
++++   COPYRIGHT (c)  HostMobility AB                             +++
++++                                                              +++
++++ The copyright to the computer Program(s) herein is the       +++
++++ property of HostMobility, Sweden. The program(s) may be      +++
++++ used and or copied only with the written permission of       +++
++++ HostMobility, or in accordance with the terms and            +++
++++ conditions stipulated in the agreement contract under        +++
++++ which the program(s) have been supplied                      +++
++++                                                              +++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++++                                                              +++
+*/
 
 #include <linux/delay.h>
 #include <linux/interrupt.h>
@@ -36,9 +45,12 @@ static inline int mx4_wait_to_receive_response (struct spi_device* spi)
    	if (rc > 0 && mx4->spi_response_sync.has_data) {
     	// ok
     	ret = mx4->spi_response_sync.has_data;
+		// clear if we gets data otherwise counter++ each spi wait timeout and let it rollover.
+		mx4->pic_wait_error_counter = 0;
    	} else if (!rc) {
     	// timeout
-    	dev_err(&mx4->spi->dev, "spi wait timeout\n");
+		mx4->pic_wait_error_counter++;
+    	dev_err(&mx4->spi->dev, "spi wait timeout, count: %u\n", mx4->pic_wait_error_counter);
      	ret = 0;
    	} else {
     	dev_err(&mx4->spi->dev, "spi wait error rc=%d has_data=%d\n",
@@ -496,7 +508,12 @@ static int mx4_io_irq_setup(struct mx4_spi_device *mx4)
 		irq_set_chip_data(irq, mx4);
 		irq_set_chip_and_handler(irq, &mx4_io_irq_chip, handle_simple_irq);
 		irq_set_nested_thread(irq, 1);
+
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(4,0,0)
+		set_irq_flags(irq, IRQF_VALID);
+#else
 		irq_set_noprobe(irq);
+#endif
 	}
 	return 0;
 }
@@ -517,6 +534,9 @@ static void mx4_io_gpio_irq_remove(struct mx4_spi_device *mx4)
 #else
 	int base = mx4->irq.base;
 	for (irq = base; irq < base + mx4->chip.ngpio; irq++) {
+#ifdef CONFIG_ARM
+		set_irq_flags(irq, 0);
+#endif
 		irq_set_chip_and_handler(irq, NULL, NULL);
 		irq_set_chip_data(irq, NULL);
 	}
@@ -544,12 +564,13 @@ static int mx4_io_probe (struct spi_device *spi)
 	mx4_gpio_init(&mx4->chip);
 
 #ifndef CONFIG_OF
-	mx4->irq.base = 450;
+	mx4->irq.base = 500;
 #endif /* CONFIG_OF */
 
 	init_waitqueue_head(&mx4->spi_response_sync.queue);
 
 	mx4->dev = dev;
+	mx4->chip.dev = dev;
 	mx4->spi = spi;
 	mx4->event_rdy_present = 0;
 	mx4->bootloader.active = 0;
@@ -559,6 +580,7 @@ static int mx4_io_probe (struct spi_device *spi)
 	mx4->suspended = 0;
 	mx4->pic_suspended = 0;
 	mx4->pic_wake_up = 0;
+	mx4->pic_wait_error_counter = 0;
 
 	dev_set_drvdata (&spi->dev, mx4);
 
@@ -719,7 +741,6 @@ static int mx4_spi_suspend(struct device *dev)
 	if(cnt == MX4_IO_SUSPEND_RESUME_MAX_TRY)
 		goto error;
 
-	mx4->spi_response_sync.has_data = 0;
 	ret = mx4_wait_to_receive_response(spi);
 	if (ret == 0) {
 		dev_err(dev, "timeout waiting for pic sleep sync\n");
@@ -837,7 +858,7 @@ static void __exit mx4_io_exit (void)
 }
 module_exit(mx4_io_exit);
 
-MODULE_AUTHOR ("Mirza Krak <mirza.krak@hostmobility.com>");
-MODULE_DESCRIPTION ("mx4 multiprocessor communication");
-MODULE_LICENSE ("GPL v2");
+MODULE_AUTHOR ("Host Mobility");
+MODULE_DESCRIPTION ("mx4 io");
+MODULE_LICENSE ("GPL");
 MODULE_VERSION (DRIVER_VERSION);

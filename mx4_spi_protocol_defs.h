@@ -1,9 +1,11 @@
 /*
- * Copyright (C) 2017 Host Mobility AB. All rights reserved.
+ * File:   protocol_defs.h
+ * Author: root
  *
- * This file is licensed under the terms of the GNU General Public
- * License version 2. This program is licensed "as is" without any
- * warranty of any kind, whether express or implied.
+ * Created on October 15, 2012, 9:46 AM
+ *
+ * History
+ * 1309?? : (rg) Added battery voltage.
  */
 
 #ifndef MX4_SPI_PROTOCOL_DEFS_H_
@@ -11,15 +13,15 @@
 
 #ifdef MX4_LINUX_KERNEL_SPACE
 
-    #include <asm/types.h>
-    typedef u8 mx4_u8_t;
-    typedef u32 mx4_u32_t;
+	#include <asm/types.h>
+	typedef u8 mx4_u8_t;
+	typedef u32 mx4_u32_t;
 
 #else //the microcontroller side
 
-    #include <stdint.h>
-    typedef uint8_t mx4_u8_t;
-    typedef uint32_t mx4_u32_t;
+	#include <stdint.h>
+	typedef uint8_t mx4_u8_t;
+	typedef uint32_t mx4_u32_t;
 
 #endif
 
@@ -30,28 +32,31 @@ typedef mx4_u8_t mx4_spi_status_field_t;
 typedef mx4_u32_t mx4_spi_data_field_t;
 typedef mx4_u8_t mx4_spi_checksum_t;
 
+//---------------------------------------------------------------------------------------------------------
 /* Checksum calc*/
 static inline mx4_spi_checksum_t mx4_checksum_accumulate (const void* buffer, unsigned length)
 {
-    mx4_spi_checksum_t result = 0;
-    const mx4_spi_checksum_t* buff = (const mx4_spi_checksum_t*) buffer;
-    unsigned i;
+	mx4_spi_checksum_t result = 0;
+	const mx4_spi_checksum_t* buff = (const mx4_spi_checksum_t*) buffer;
+	unsigned i;
 
-    for (i = 0; i < length; ++i, ++buff) {	result += *buff; }
+	for (i = 0; i < length; ++i, ++buff) {	result += *buff; }
 
-    return result;
+	return result;
 }
 
+//---------------------------------------------------------------------------------------------------------
 static inline mx4_spi_checksum_t mx4_calculate_checksum (const void* buffer, unsigned length)
 {
-    return 0 - mx4_checksum_accumulate (buffer, length);
+	return 0 - mx4_checksum_accumulate (buffer, length);
 }
 
+//---------------------------------------------------------------------------------------------------------
 static inline mx4_spi_checksum_t mx4_checksum_fail (const void* buffer, unsigned length, mx4_spi_checksum_t checksum)
 {
-    return checksum + mx4_checksum_accumulate (buffer, length);
+	return checksum + mx4_checksum_accumulate (buffer, length);
 }
-
+//---------------------------------------------------------------------------------------------------------
 
 static const int mx4_spi_data_field_char_digits = 11; /*an integer string is always maximum 11 chars long without null.*/
 
@@ -314,10 +319,12 @@ static const mx4_u32_t mx4_spi_sync_frame_size = sizeof (mx4_spi_sync_frame);
 #define PROT_TYPE_CALIBRATION_OUT_4             0xee
 #define PROT_TYPE_CALIBRATION_ANALOG_5          0xef
 
+#define PROT_TYPE_DEBUG_DATA                    0xf0
+#define PROT_TYPE_POWER_ON_5V_PERM              0xf1
 
-#define PROT_TYPE_EVENT_INPUTS                  0xf6
-#define PROT_TYPE_POLLED                        0xf7
-#define PROT_TYPE_INVALID                       0xff
+#define PROT_TYPE_EVENT_INPUTS			 0xf6
+#define PROT_TYPE_POLLED                 0xf7
+#define PROT_TYPE_INVALID		   	     0xff
 
 //Generic bit access convenience macros
 #define MX4_READ_INT_BIT(integer, index)\
@@ -331,23 +338,23 @@ static const mx4_u32_t mx4_spi_sync_frame_size = sizeof (mx4_spi_sync_frame);
 
 enum mx4_polled_inputs_ids
 {
-    digital_input_1_id,
+	digital_input_1_id,
     digital_input_2_id,
     digital_input_3_id,
     digital_input_4_id,
     digital_input_5_id,
     digital_input_6_id,
     modem_sync_id,
-    modem_ring_id,
-    modem_current_ind_id,
-    modem_power_ind_id,
+	modem_ring_id,
+	modem_current_ind_id,
+	modem_power_ind_id,
     start_switch_id,
     wake_on_can_id,
     mux_in_1_id,
     mux_in_2_id,
     digital_input_7_id,
     digital_input_8_id,
-    mx4_polled_inputs_count
+	mx4_polled_inputs_count
 };
 
 //Use this macros for accessing the periodically polled short circuit inputs bits instead of direct accessing.

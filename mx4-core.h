@@ -1,10 +1,19 @@
 /*
- * Copyright (C) 2017 Host Mobility AB. All rights reserved.
- *
- * This file is licensed under the terms of the GNU General Public
- * License version 2. This program is licensed "as is" without any
- * warranty of any kind, whether express or implied.
- */
++++                                                              +++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++++                                                              +++
++++   COPYRIGHT (c)  HostMobility AB                             +++
++++                                                              +++
++++ The copyright to the computer Program(s) herein is the       +++
++++ property of HostMobility, Sweden. The program(s) may be      +++
++++ used and or copied only with the written permission of       +++
++++ HostMobility, or in accordance with the terms and            +++
++++ conditions stipulated in the agreement contract under        +++
++++ which the program(s) have been supplied                      +++
++++                                                              +++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++++                                                              +++
+*/
 
 #ifndef __MX4_CORE_H__
 #define __MX4_CORE_H__
@@ -18,6 +27,8 @@
 #include <linux/workqueue.h>
 #include <linux/sched.h>
 #include <linux/spi/spi.h>
+
+#include "mx4_preprocessor_add_hack.h"
 
 #define MX4_LINUX_KERNEL_SPACE 1 //to *_spi_protocol_defs.h
 
@@ -94,6 +105,7 @@ struct mx4_spi_device
 	u8 suspended;
 	u8 pic_suspended;
 	u8 pic_wake_up;
+	u8 pic_wait_error_counter;
 };
 
 #define MX4_IO_DRV_NAME	"mx4_io_spi"
