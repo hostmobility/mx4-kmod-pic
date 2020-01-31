@@ -74,6 +74,7 @@ struct mx4_irq {
 
 struct mx4_spi_device
 {
+	char dma_safe_buffer[32]; //Use this DMA safe buffer for SPI usage
 	/* locks this struct data access and a r/w operation. */
 	struct mutex lock;
 

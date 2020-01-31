@@ -201,7 +201,6 @@ static void mx4_spi_sync (struct spi_device *spi)
 ssize_t mx4_spi_read_value (struct spi_device *spi, u32* value, u8 type)
 {
 	int val;
-	char buffer [MX4_SPI_READ_RESPONSE_SIZE];
 	struct mx4_spi_device* mx4 = dev_get_drvdata(&spi->dev);
 	struct device *dev = &spi->dev;
 
@@ -211,8 +210,8 @@ ssize_t mx4_spi_read_value (struct spi_device *spi, u32* value, u8 type)
 
 	dev_dbg(dev, "request to read type: 0x%02x\n", type);
 
-	val = fill_read_request (spi, buffer, type);
-	val = mx4_spi_write (spi, buffer, val);
+	val = fill_read_request (spi, mx4->dma_safe_buffer, type);
+	val = mx4_spi_write (spi, mx4->dma_safe_buffer, val);
 
 	if (val < 0) {
 		dev_err(dev, "read request transfer failed: %d cmd = 0x%02x\n",
@@ -228,7 +227,7 @@ ssize_t mx4_spi_read_value (struct spi_device *spi, u32* value, u8 type)
 		return -ETIMEDOUT;
 	}
 
-	val = mx4_spi_read (spi, buffer, MX4_SPI_READ_RESPONSE_SIZE);
+	val = mx4_spi_read (spi, mx4->dma_safe_buffer, MX4_SPI_READ_RESPONSE_SIZE);
 
 	if (val < 0) {
 		dev_err(dev, "read response transfer failed: %d cmd = 0x%02x\n\n",
@@ -236,7 +235,7 @@ ssize_t mx4_spi_read_value (struct spi_device *spi, u32* value, u8 type)
 		goto fail_sync;
 	}
 
-	val = parse_read_response (spi, buffer, value, type);
+	val = parse_read_response (spi, mx4->dma_safe_buffer, value, type);
 	if (val == -EINVAL) {
 		dev_err(dev, "read response parse error: %d cmd = 0x%02x\n",
 			val, type);
@@ -255,7 +254,6 @@ fail_sync:
 ssize_t mx4_spi_write_value(struct spi_device *spi, u32 value, u8 type)
 {
 	int val;
-	char buffer [MX4_SPI_WRITE_REQUEST_SIZE];
 	struct mx4_spi_device* mx4 = dev_get_drvdata(&spi->dev);
 	struct device *dev = &spi->dev;
 
@@ -265,8 +263,8 @@ ssize_t mx4_spi_write_value(struct spi_device *spi, u32 value, u8 type)
 
 	dev_dbg(dev, "request to write type: 0x%02x\n", type);
 
-	val = fill_write_request(spi, buffer, type, value);
-	val = mx4_spi_write(spi, buffer, val);
+	val = fill_write_request(spi, mx4->dma_safe_buffer, type, value);
+	val = mx4_spi_write(spi, mx4->dma_safe_buffer, val);
 
 	if (val < 0) {
 		dev_err(dev, "write request transfer failed: %d cmd = 0x%02x\n",
@@ -282,7 +280,7 @@ ssize_t mx4_spi_write_value(struct spi_device *spi, u32 value, u8 type)
 		return -ETIMEDOUT;
 	}
 
-	val = mx4_spi_read (spi, buffer, MX4_SPI_WRITE_RESPONSE_SIZE);
+	val = mx4_spi_read (spi, mx4->dma_safe_buffer, MX4_SPI_WRITE_RESPONSE_SIZE);
 
 	if (val < 0) {
 		dev_err(dev, "write response transfer failed: %d cmd = 0x%02x\n",
@@ -290,7 +288,7 @@ ssize_t mx4_spi_write_value(struct spi_device *spi, u32 value, u8 type)
 		goto fail_sync;
 	}
 
-	val = parse_write_response(spi, buffer, type);
+	val = parse_write_response(spi, mx4->dma_safe_buffer, type);
 	if (val == -EINVAL) {
 		dev_err(dev, "write response parse error: %d cmd = 0x%02x\n",
 			val, type);
@@ -309,13 +307,17 @@ fail_sync:
 static int mx4_spi_wakup_pic(struct mx4_spi_device *mx4)
 {
 	int val;
-	char buffer[] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+	int i;
 	struct device *dev = &mx4->spi->dev;
 	struct spi_device *spi = mx4->spi;
 	struct timespec ts1, ts2;
 
+	for(i = 0; i < 8; ++i)
+	{
+		mx4->dma_safe_buffer[i] = 0xff;
+	}
 	/* We send 8 bytes to make sure protocol overflows */
-	val = mx4_spi_write(spi, buffer, MX4_SPI_WRITE_REQUEST_SIZE + 1);
+	val = mx4_spi_write(spi, mx4->dma_safe_buffer, MX4_SPI_WRITE_REQUEST_SIZE + 1);
 
 	if (val < 0) {
 		dev_err(dev, "wakeup pic request transfer failed: %d\n", val);
