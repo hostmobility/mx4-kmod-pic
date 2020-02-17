@@ -572,7 +572,7 @@ static int mx4_io_probe (struct spi_device *spi)
 	init_waitqueue_head(&mx4->spi_response_sync.queue);
 
 	mx4->dev = dev;
-#if LINUX_VERSION_CODE <= KERNEL_VERSION(4,0,0)
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(4,5,0)
 	mx4->chip.dev = dev;
 #else
 	mx4->chip.parent = dev;
