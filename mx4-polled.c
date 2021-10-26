@@ -20,7 +20,8 @@
 #include <linux/irq.h>
 
 /* This is offset of the first input of gpio base */
-#define INPUT_EVENT_OFFSET 12
+/* starting with {PROT_TYPE_DIGITAL_IN_1, 27, "digital-in-1 / sc", GPIOF_IN}, location in gpio.c */
+#define INPUT_EVENT_OFFSET 27 
 
 static inline unsigned long ms_to_jiffies_raw(unsigned long ms)
 {
