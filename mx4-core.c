@@ -327,8 +327,11 @@ static int mx4_spi_wakup_pic(struct mx4_spi_device *mx4)
 	getnstimeofday(&ts1);
 	val = mx4_wait_to_receive_response(spi);
 	getnstimeofday(&ts2);
-
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(5,4,0)
+	ts1 = timespec64_sub(ts2, ts1);
+else
 	ts1 = timespec_sub(ts2, ts1);
+#endif
 
 	if (val == 0) {
 		dev_err(dev, "wakeup pic no sync received\n");
