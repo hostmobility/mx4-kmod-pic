@@ -24,6 +24,12 @@
 #include <linux/of_device.h>
 #endif /* CONFIG_OF */
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,4,0)
+	#include <linux/time64.h>
+else
+	#include <linux/time.h>
+#endif
+
 #include "mx4-core.h"
 
 #ifdef DEBUG
