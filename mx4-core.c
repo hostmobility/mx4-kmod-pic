@@ -22,13 +22,9 @@
 #ifdef CONFIG_OF
 #include <linux/of.h>
 #include <linux/of_device.h>
+#include <linux/timekeeping.h>
 #endif /* CONFIG_OF */
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,4,0)
-	#include <linux/time64.h>
-else
-	#include <linux/time.h>
-#endif
 
 #include "mx4-core.h"
 
@@ -330,12 +326,16 @@ static int mx4_spi_wakup_pic(struct mx4_spi_device *mx4)
 		return val;
 	}
 
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,4,0)
+	ktime_get_real_ts64(&ts1);
+	val = mx4_wait_to_receive_response(spi);
+	ktime_get_real_ts64(&ts2);
+	ts1 = timespec64_sub(ts2, ts1);
+else
 	getnstimeofday(&ts1);
 	val = mx4_wait_to_receive_response(spi);
 	getnstimeofday(&ts2);
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,4,0)
-	ts1 = timespec64_sub(ts2, ts1);
-else
 	ts1 = timespec_sub(ts2, ts1);
 #endif
 

@@ -149,7 +149,7 @@ int mx4_gpio_configure(int gpio_base)
 			mx4_gpios[i].name);
 
 		if (err) {
-			pr_warning("mx4_gpio_configure (%s) failed, err = %d",
+			pr_warn("mx4_gpio_configure (%s) failed, err = %d",
 				   mx4_gpios[i].name, err);
 
 			return -1;
