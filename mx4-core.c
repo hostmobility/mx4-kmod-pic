@@ -314,7 +314,6 @@ static int mx4_spi_wakup_pic(struct mx4_spi_device *mx4)
 	int i;
 	struct device *dev = &mx4->spi->dev;
 	struct spi_device *spi = mx4->spi;
-	struct timespec ts1, ts2;
 
 	for(i = 0; i < 8; ++i)
 	{
@@ -327,27 +326,6 @@ static int mx4_spi_wakup_pic(struct mx4_spi_device *mx4)
 		dev_err(dev, "wakeup pic request transfer failed: %d\n", val);
 		return val;
 	}
-
-
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,4,0)
-	ktime_get_real_ts64(&ts1);
-	val = mx4_wait_to_receive_response(spi);
-	ktime_get_real_ts64(&ts2);
-	ts1 = timespec64_sub(ts2, ts1);
-#else
-	getnstimeofday(&ts1);
-	val = mx4_wait_to_receive_response(spi);
-	getnstimeofday(&ts2);
-	ts1 = timespec_sub(ts2, ts1);
-#endif
-
-	if (val == 0) {
-		dev_err(dev, "wakeup pic no sync received\n");
-		return -ETIMEDOUT;
-	}
-
-	dev_info(dev, "co-cpu responded within %lu.%09lu seconds\n",
-			(unsigned long)ts1.tv_sec, (unsigned long)ts1.tv_nsec);
 
 	return 0;
 }
