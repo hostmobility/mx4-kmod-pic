@@ -3,7 +3,7 @@ mx4_pic-y = mx4-core.o mx4-gpio.o mx4-polled.o mx4-attributes.o
 
 PWD := $(shell pwd)
 
-EXTRA_CFLAGS += -I$(KERNEL_SRC)/include -I$(KERNEL_SRC)/include/uapi -Wno-format -std=c11
+EXTRA_CFLAGS += -I$(KERNEL_SRC)/include -I$(KERNEL_SRC)/include/uapi -Wno-format
 
 DESTDIR ?= $(INSTALL_MOD_PATH)
 
