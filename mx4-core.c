@@ -332,7 +332,7 @@ static int mx4_spi_wakup_pic(struct mx4_spi_device *mx4)
 	val = mx4_wait_to_receive_response(spi);
 	ktime_get_real_ts64(&ts2);
 	ts1 = timespec64_sub(ts2, ts1);
-else
+#else
 	getnstimeofday(&ts1);
 	val = mx4_wait_to_receive_response(spi);
 	getnstimeofday(&ts2);
