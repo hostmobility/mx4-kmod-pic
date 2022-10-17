@@ -24,7 +24,7 @@
 #include <linux/of_device.h>
 #include <linux/timekeeping.h>
 #include <linux/time64.h>
-#define _POSIX_C_SOURCE 199309L
+#include <linux/time.h>
 #endif /* CONFIG_OF */
 
 
