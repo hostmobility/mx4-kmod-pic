@@ -16,6 +16,7 @@
 */
 
 #include <linux/gpio.h>
+#include <linux/version.h>
 
 #include "mx4-core.h"
 
@@ -129,19 +130,29 @@ static void mx4_gpio_set(struct gpio_chip *gc, unsigned gpio_num, int val)
 	}
 }
 
-static int mx4_gpio_direction_in(struct gpio_chip *chip, unsigned offset)
+static int mx4_gpio_direction_in(struct gpio_chip *gc, unsigned offset)
 {
+	mx4_gpio_get(gc, offset);
 	return 0;
 }
 
-static int mx4_gpio_direction_out(struct gpio_chip *chip,
+static int mx4_gpio_direction_out(struct gpio_chip *gc,
 				     unsigned offset, int value)
 {
+	if (mx4_gpios[offset].flags == GPIOF_IN)
+	{
+		//dev_dbg(gc->client->dev, "%s port is input only\n", mx4_gpios[offset].name);
+		return -EACCES;
+	}
+
+	mx4_gpio_set(gc, offset, value);
 	return 0;
 }
 
 int mx4_gpio_configure(int gpio_base)
 {
+
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(4,0,0)
 	int i, err;
 
 	for (i = 0; i < ARRAY_SIZE(mx4_gpios); ++i) {
@@ -157,7 +168,7 @@ int mx4_gpio_configure(int gpio_base)
 
 		gpio_export (gpio_base + i, false);
 	}
-
+#endif	
 	return 0;
 }
 
@@ -166,7 +177,9 @@ void mx4_gpio_clear(int gpio_base)
 	int i;
 
 	for (i = 0; i < ARRAY_SIZE(mx4_gpios); ++i) {
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(4,0,0)
 		gpio_unexport (gpio_base + i);
+#endif
 		gpio_free (gpio_base + i);
 	}
 }
