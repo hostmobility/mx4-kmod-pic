@@ -16,6 +16,7 @@
 */
 
 #include <linux/gpio.h>
+#include <linux/version.h>
 
 #include "mx4-core.h"
 
@@ -131,7 +132,7 @@ static void mx4_gpio_set(struct gpio_chip *gc, unsigned gpio_num, int val)
 
 static int mx4_gpio_direction_in(struct gpio_chip *gc, unsigned offset)
 {
-	mx4_gpio_get(gc, offset,);
+	mx4_gpio_get(gc, offset);
 	return 0;
 }
 
@@ -150,6 +151,24 @@ static int mx4_gpio_direction_out(struct gpio_chip *gc,
 
 int mx4_gpio_configure(int gpio_base)
 {
+
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(4,0,0)
+	int i, err;
+
+	for (i = 0; i < ARRAY_SIZE(mx4_gpios); ++i) {
+		err = gpio_request_one(gpio_base + i, mx4_gpios[i].flags,
+			mx4_gpios[i].name);
+
+		if (err) {
+			pr_warning("mx4_gpio_configure (%s) failed, err = %d",
+				   mx4_gpios[i].name, err);
+
+			return -1;
+		}
+
+		gpio_export (gpio_base + i, false);
+	}
+#endif	
 	return 0;
 }
 
@@ -158,6 +177,9 @@ void mx4_gpio_clear(int gpio_base)
 	int i;
 
 	for (i = 0; i < ARRAY_SIZE(mx4_gpios); ++i) {
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(4,0,0)
+		gpio_unexport (gpio_base + i);
+#endif
 		gpio_free (gpio_base + i);
 	}
 }
