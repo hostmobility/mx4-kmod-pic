@@ -64,133 +64,6 @@ static inline int mx4_wait_to_receive_response (struct spi_device* spi)
 	return ret;
 }
 
-static int fill_read_request (struct spi_device *spi, char* buffer, u8 type)
-{
-	*((u8*) (buffer +
-		MX4_SPI_READ_REQUEST_SERVICE_PRIMITIVE_OFFSET)) = MX4_SPI_READ_REQUEST;
-	*((u8*) (buffer + MX4_SPI_READ_REQUEST_RELATED_VALUE_OFFSET)) = type;
-
-	dev_dbg(&spi->dev, "read request bytes: %02x %02x\n", buffer[0], buffer[1]);
-
-	return MX4_SPI_READ_REQUEST_SIZE;
-}
-
-static int parse_read_response (struct spi_device *spi, char* buffer,
-	u32* read_value, u8 expected_type)
-{
-	u8 primitive, type, status, checksum;
-	struct device *dev = &spi->dev;
-
-	primitive 	= *((u8*)(buffer +
-		MX4_SPI_READ_RESPONSE_SERVICE_PRIMITIVE_OFFSET));
-	type 		= *((u8*) (buffer +
-		MX4_SPI_READ_RESPONSE_RELATED_VALUE_OFFSET));
-
-	status 		= *((u8*) (buffer + MX4_SPI_READ_RESPONSE_STATUS_OFFSET));
-	*read_value = *((u32*) (buffer + MX4_SPI_READ_RESPONSE_DATA_OFFSET));
-	checksum 	= *((u8*) (buffer + MX4_SPI_READ_RESPONSE_CHECKSUM_OFFSET));
-
-	dev_dbg(dev, "read response bytes: %02x %02x %02x %02x%02x%02x%02x %02x \n",
-		buffer[0], buffer[1], buffer[2], buffer[3],
-		buffer[4], buffer[5], buffer[6], buffer[7]);
-
-	if (primitive !=  MX4_SPI_READ_RESPONSE) {
-		dev_err(dev, "read service doesn't match: expected: 0x%02x, "
-			"received: 0x%02x", MX4_SPI_READ_RESPONSE, primitive);
-		goto parse_error;
-	}
-
-	if (type !=  expected_type) {
-		dev_err(dev, "read type doesn't match: expected: 0x%02x, "
-			"received: 0x%02x\n", expected_type, type);
-		goto parse_error;
-	}
-
-	if (status !=  MX4_SPI_OK) {
-		return 0;
-	}
-
-	if (mx4_checksum_fail(
-		buffer + MX4_SPI_READ_RESPONSE_CHECKSUM_FIRST_BYTE_OFFSET,
-		MX4_SPI_READ_RESPONSE_CHECKSUM_BYTE_COUNT,
-		checksum
-		)) {
-		dev_err(dev, "checksum failed, try again\n");
-		goto parse_error;
-	}
-
-	return  MX4_SPI_READ_RESPONSE_SIZE;
-
-parse_error:
-	dev_err(dev, "read response bytes: %02x %02x %02x %02x%02x%02x%02x %02x \n",
-		buffer[0], buffer[1], buffer[2], buffer[3],
-		buffer[4], buffer[5], buffer[6], buffer[7]);
-	return -EINVAL;
-
-}
-
-static int fill_write_request (struct spi_device *spi, char* buffer,
-	u8 type, u32 value)
-{
-	*((u8*) (buffer +
-		MX4_SPI_WRITE_REQUEST_SERVICE_PRIMITIVE_OFFSET)) = MX4_SPI_WRITE_REQUEST;
-
-	*((u8*) (buffer + MX4_SPI_WRITE_REQUEST_RELATED_VALUE_OFFSET)) = type;
-	*((u32*) (buffer + MX4_SPI_WRITE_REQUEST_DATA_OFFSET)) = value;
-	*((u8*) (buffer + MX4_SPI_WRITE_REQUEST_CHECKSUM_OFFSET)) =
-		mx4_calculate_checksum(
-			buffer + MX4_SPI_WRITE_REQUEST_CHECKSUM_FIRST_BYTE_OFFSET,
-			MX4_SPI_WRITE_REQUEST_CHECKSUM_BYTE_COUNT
-		);
-
-	dev_dbg(&spi->dev, "write request bytes: %02x %02x %02x%02x%02x%02x %02x\n",
-		buffer[0], buffer[1], buffer[2], buffer[3],
-		buffer[4], buffer[5], buffer[6]);
-
-	return MX4_SPI_WRITE_REQUEST_SIZE;
-}
-
-static int parse_write_response (struct spi_device *spi, char* buffer,
-	u8 expected_type)
-{
-	u8 primitive;
-	u8 type;
-	mx4_spi_status_field_t status;
-	struct device *dev = &spi->dev;
-
-	primitive = *((u8*) (buffer +
-		MX4_SPI_WRITE_RESPONSE_SERVICE_PRIMITIVE_OFFSET)) ;
-	type = *((u8*) (buffer + MX4_SPI_WRITE_RESPONSE_RELATED_VALUE_OFFSET)) ;
-	status = *((u8*) (buffer + MX4_SPI_WRITE_RESPONSE_STATUS_OFFSET));
-
-	dev_dbg(dev, "write response bytes: %02x %02x %02x\n",
-		buffer[0], buffer[1], buffer[2]);
-
-	if (primitive !=  MX4_SPI_WRITE_RESPONSE) {
-		dev_err(dev, "write service doesn't match: expected: 0x%02x, "
-			"received: 0x%02x\n", MX4_SPI_WRITE_RESPONSE, primitive);
-		goto parse_error;
-	}
-
-	if (type !=  expected_type) {
-		dev_err(dev, "write type doesn't match: expected: 0x%02x, "
-			"received: 0x%02x\n", expected_type, type);
-		goto parse_error;
-	}
-
-	if (status !=  MX4_SPI_OK) {
-		return 0;
-	}
-
-	return MX4_SPI_WRITE_RESPONSE_SIZE;
-
-parse_error:
-	dev_err(dev, "write response bytes: %02x %02x %02x\n",
-		buffer[0], buffer[1], buffer[2]);
-	return -EINVAL;
-
-}
-
 static void mx4_spi_sync (struct spi_device *spi)
 {
 	dev_err(&spi->dev, "Sleeping %d ms to sync up after parse error",
@@ -199,9 +72,134 @@ static void mx4_spi_sync (struct spi_device *spi)
 	msleep(MX4_SYNC_SLEEP_TIME_MS);
 }
 
-ssize_t mx4_spi_read_value (struct spi_device *spi, u32* value, u8 type)
+int mx4_spi_communication (struct spi_device *spi, int length)
 {
 	int val;
+	struct mx4_spi_device* mx4 = dev_get_drvdata(&spi->dev);
+	struct device *dev = &spi->dev;
+#ifdef DEBUG
+	ktime_t start, end;
+	s64 actual_time;
+	start = ktime_get();
+#endif
+
+	dev_dbg(&spi->dev, "communication: read request bytes: %02x %02x\n", mx4->dma_safe_buffer[0], mx4->dma_safe_buffer[1]);
+
+	val = mx4_spi_write (spi, mx4->dma_safe_buffer, length);
+
+	if (val < 0) {
+		dev_err(dev, "communication request transfer failed: %d cmd = 0x%02x\n",
+			val, mx4->dma_safe_buffer[1]);
+		return val;
+	}
+	val = mx4_wait_to_receive_response (spi);
+
+#ifdef DEBUG
+	end = ktime_get();
+	actual_time = ktime_to_ns(ktime_sub(end, start));
+	if (val == 0) {
+		dev_err(dev, "communication: co-cpu no response received %lld nano seconds.",(long long)actual_time);
+	}
+#endif
+
+	if (val == 0) {
+		dev_err(dev, "communication timeout: no response received. cmd = 0x%02x\n",
+			mx4->dma_safe_buffer[1]);
+		return -ETIMEDOUT;
+	}
+
+	val = mx4_spi_read (spi, mx4->dma_safe_buffer, MX4_SPI_READ_RESPONSE_SIZE);
+
+	if (val < 0) {
+		dev_err(dev, "communication response transfer failed: %d cmd = 0x%02x\n\n",
+			val, mx4->dma_safe_buffer[1]);
+		mx4_spi_sync (spi);
+		return val;
+	}
+
+	return SUCCESSFULL_MX4_RW;
+}
+
+ssize_t mx4_spi_read_value (struct spi_device *spi, u32* value, u8 type)
+{
+	struct mx4_spi_device* mx4 = dev_get_drvdata(&spi->dev);
+	struct device *dev = &spi->dev;
+	u8 primitive, type_received, status, checksum;
+
+	if(mx4->suspended){
+		return -EBUSY;
+	}
+
+	dev_dbg(dev, "request to read type: 0x%02x\n", type);
+	memset( mx4->dma_safe_buffer, '\0', sizeof(char)*BUFFER_ARRAY_LENGTH );
+
+	mx4->dma_safe_buffer[MX4_SPI_READ_REQUEST_SERVICE_PRIMITIVE_OFFSET] = MX4_SPI_READ_REQUEST;
+	mx4->dma_safe_buffer[MX4_SPI_READ_REQUEST_RELATED_VALUE_OFFSET] = type;
+	
+	dev_dbg(&spi->dev, "read request bytes: %02x %02x\n", mx4->dma_safe_buffer[0], mx4->dma_safe_buffer[1]);
+
+	if (mx4_spi_communication(spi, MX4_SPI_READ_REQUEST_SIZE) != SUCCESSFULL_MX4_RW)
+	{
+		dev_err(dev, "mx4_spi_read_value failed\n");
+		return -EIO;
+	}
+
+	// Read response
+	primitive 	= *((u8*)(mx4->dma_safe_buffer +
+		MX4_SPI_READ_RESPONSE_SERVICE_PRIMITIVE_OFFSET));
+	type_received 		= *((u8*) (mx4->dma_safe_buffer +
+		MX4_SPI_READ_RESPONSE_RELATED_VALUE_OFFSET));
+
+	status 		= *((u8*) (mx4->dma_safe_buffer + MX4_SPI_READ_RESPONSE_STATUS_OFFSET));
+	*value = *((u32*) (mx4->dma_safe_buffer + MX4_SPI_READ_RESPONSE_DATA_OFFSET));
+	checksum 	= *((u8*) (mx4->dma_safe_buffer + MX4_SPI_READ_RESPONSE_CHECKSUM_OFFSET));
+
+	dev_dbg(dev, "read response bytes: %02x %02x %02x %02x%02x%02x%02x %02x \n",
+		 mx4->dma_safe_buffer[0],  mx4->dma_safe_buffer[1],  mx4->dma_safe_buffer[2],  mx4->dma_safe_buffer[3],
+		 mx4->dma_safe_buffer[4],  mx4->dma_safe_buffer[5],  mx4->dma_safe_buffer[6],  mx4->dma_safe_buffer[7]);
+
+	if (primitive !=  MX4_SPI_READ_RESPONSE) {
+		dev_err(dev, "read service doesn't match: expected: 0x%02x, "
+			"received: 0x%02x", MX4_SPI_READ_RESPONSE, primitive);
+		dev_err(dev, "read response bytes: %02x %02x %02x %02x%02x%02x%02x %02x \n",
+		 	mx4->dma_safe_buffer[0],  mx4->dma_safe_buffer[1],  mx4->dma_safe_buffer[2],  mx4->dma_safe_buffer[3],
+		 	mx4->dma_safe_buffer[4],  mx4->dma_safe_buffer[5],  mx4->dma_safe_buffer[6],  mx4->dma_safe_buffer[7]);
+		dev_err(dev, "read response parse error. cmd = 0x%02x\n", type);
+		mx4_spi_sync (spi);
+		return -EINVAL;
+	}
+
+	if (type_received !=  type) {
+		dev_err(dev, "read type doesn't match: expected: 0x%02x, "
+			"received: 0x%02x\n", type, type_received);
+		dev_err(dev, "read response bytes: %02x %02x %02x %02x%02x%02x%02x %02x \n",
+		 	mx4->dma_safe_buffer[0],  mx4->dma_safe_buffer[1],  mx4->dma_safe_buffer[2],  mx4->dma_safe_buffer[3],
+		 	mx4->dma_safe_buffer[4],  mx4->dma_safe_buffer[5],  mx4->dma_safe_buffer[6],  mx4->dma_safe_buffer[7]);
+		dev_err(dev, "read response parse error. cmd = 0x%02x\n", type);
+		mx4_spi_sync (spi);
+		return -EINVAL;
+	}
+
+	if (status !=  MX4_SPI_OK) {
+		dev_err(dev, "read status doesn't match: expected: 0x%02x, "
+			"received: 0x%02x\n", MX4_SPI_OK, status);
+		return -EIO;
+	}
+
+	if (mx4_checksum_fail(
+		 mx4->dma_safe_buffer + MX4_SPI_READ_RESPONSE_CHECKSUM_FIRST_BYTE_OFFSET,
+		MX4_SPI_READ_RESPONSE_CHECKSUM_BYTE_COUNT,
+		checksum
+		)) {
+		dev_err(dev, "checksum failed, try again\n");
+		goto parse_error;
+	}
+
+	return  SUCCESSFULL_MX4_RW;
+}
+
+ssize_t mx4_spi_write_value(struct spi_device *spi, u32 value, u8 type)
+{
 	struct mx4_spi_device* mx4 = dev_get_drvdata(&spi->dev);
 	struct device *dev = &spi->dev;
 
@@ -210,99 +208,56 @@ ssize_t mx4_spi_read_value (struct spi_device *spi, u32* value, u8 type)
 	}
 
 	dev_dbg(dev, "request to read type: 0x%02x\n", type);
+	memset( mx4->dma_safe_buffer, '\0', sizeof(char)*BUFFER_ARRAY_LENGTH );
 
-	val = fill_read_request (spi, mx4->dma_safe_buffer, type);
-	val = mx4_spi_write (spi, mx4->dma_safe_buffer, val);
+	*((u8*) (mx4->dma_safe_buffer +
+		MX4_SPI_WRITE_REQUEST_SERVICE_PRIMITIVE_OFFSET)) = MX4_SPI_WRITE_REQUEST;
 
-	if (val < 0) {
-		dev_err(dev, "read request transfer failed: %d cmd = 0x%02x\n",
-			val, type);
-		return val;
+	*((u8*) (mx4->dma_safe_buffer + MX4_SPI_WRITE_REQUEST_RELATED_VALUE_OFFSET)) = type;
+	*((u32*) (mx4->dma_safe_buffer + MX4_SPI_WRITE_REQUEST_DATA_OFFSET)) = value;
+	*((u8*) (mx4->dma_safe_buffer + MX4_SPI_WRITE_REQUEST_CHECKSUM_OFFSET)) =
+		mx4_calculate_checksum(
+			mx4->dma_safe_buffer + MX4_SPI_WRITE_REQUEST_CHECKSUM_FIRST_BYTE_OFFSET,
+			MX4_SPI_WRITE_REQUEST_CHECKSUM_BYTE_COUNT
+		);
+
+	dev_dbg(&spi->dev, "write request bytes: %02x %02x %02x%02x%02x%02x %02x\n",
+		mx4->dma_safe_buffer[0], mx4->dma_safe_buffer[1], mx4->dma_safe_buffer[2], mx4->dma_safe_buffer[3],
+		mx4->dma_safe_buffer[4], mx4->dma_safe_buffer[5], mx4->dma_safe_buffer[6]);
+
+
+	if (mx4_spi_communication(spi, MX4_SPI_WRITE_REQUEST_SIZE) != SUCCESSFULL_MX4_RW)
+	{
+		dev_err(dev, "mx4_spi_write_value failed\n");
+		return -EIO;
+	}
+	// Read response
+	dev_dbg(dev, "write response bytes: %02x %02x %02x\n",
+		mx4->dma_safe_buffer[0], mx4->dma_safe_buffer[1], mx4->dma_safe_buffer[2]);
+
+	if (mx4->dma_safe_buffer[MX4_SPI_WRITE_RESPONSE_SERVICE_PRIMITIVE_OFFSET] !=  MX4_SPI_WRITE_RESPONSE) {
+		dev_err(dev, "write service doesn't match: expected: 0x%02x, "
+			"received: 0x%02x\n", MX4_SPI_WRITE_RESPONSE, primitive);
+		dev_err(dev, "write response bytes: %02x %02x %02x\n",
+		mx4->dma_safe_buffer[0], mx4->dma_safe_buffer[1], mx4->dma_safe_buffer[2]);
+		return -EINVAL;
 	}
 
-	val = mx4_wait_to_receive_response (spi);
-
-	if (val == 0) {
-		dev_err(dev, "read timeout: no response received. cmd = 0x%02x\n",
-			type);
-		return -ETIMEDOUT;
+	if (mx4->dma_safe_buffer[MX4_SPI_WRITE_RESPONSE_RELATED_VALUE_OFFSET] !=  type) {
+		dev_err(dev, "write type doesn't match: expected: 0x%02x, "
+			"received: 0x%02x\n", type, mx4->dma_safe_buffer[MX4_SPI_WRITE_RESPONSE_RELATED_VALUE_OFFSET]);
+		dev_err(dev, "write response bytes: %02x %02x %02x\n",
+		mx4->dma_safe_buffer[0], mx4->dma_safe_buffer[1], mx4->dma_safe_buffer[2]);
+		return -EINVAL;
 	}
 
-	val = mx4_spi_read (spi, mx4->dma_safe_buffer, MX4_SPI_READ_RESPONSE_SIZE);
-
-	if (val < 0) {
-		dev_err(dev, "read response transfer failed: %d cmd = 0x%02x\n\n",
-			val, type);
-		goto fail_sync;
-	}
-
-	val = parse_read_response (spi, mx4->dma_safe_buffer, value, type);
-	if (val == -EINVAL) {
-		dev_err(dev, "read response parse error: %d cmd = 0x%02x\n",
-			val, type);
-		goto fail_sync;
-	} else if (!val) {
-		return -EPERM;
-	}
-
-	return SUCCESSFULL_MX4_RW;
-
-fail_sync:
-	mx4_spi_sync (spi);
-	return val;
-}
-
-ssize_t mx4_spi_write_value(struct spi_device *spi, u32 value, u8 type)
-{
-	int val;
-	struct mx4_spi_device* mx4 = dev_get_drvdata(&spi->dev);
-	struct device *dev = &spi->dev;
-
-	if (mx4->suspended) {
-		return -EBUSY;
-	}
-
-	dev_dbg(dev, "request to write type: 0x%02x\n", type);
-
-	val = fill_write_request(spi, mx4->dma_safe_buffer, type, value);
-	val = mx4_spi_write(spi, mx4->dma_safe_buffer, val);
-
-	if (val < 0) {
-		dev_err(dev, "write request transfer failed: %d cmd = 0x%02x\n",
-			val, type);
-		return val;
-	}
-
-	val = mx4_wait_to_receive_response(spi);
-
-	if (val == 0) {
-		dev_err(dev, "write timeout: no response received. cmd = 0x%02x\n",
-			type);
-		return -ETIMEDOUT;
-	}
-
-	val = mx4_spi_read (spi, mx4->dma_safe_buffer, MX4_SPI_WRITE_RESPONSE_SIZE);
-
-	if (val < 0) {
-		dev_err(dev, "write response transfer failed: %d cmd = 0x%02x\n",
-			val, type);
-		goto fail_sync;
-	}
-
-	val = parse_write_response(spi, mx4->dma_safe_buffer, type);
-	if (val == -EINVAL) {
-		dev_err(dev, "write response parse error: %d cmd = 0x%02x\n",
-			val, type);
-		goto fail_sync;
-	} else if (!val) {
-		return -EPERM;
+	if (mx4->dma_safe_buffer[MX4_SPI_WRITE_RESPONSE_STATUS_OFFSET] !=  MX4_SPI_OK) {
+		dev_err(dev, "write status doesn't match: expected: 0x%02x, "
+			"received: 0x%02x\n", MX4_SPI_OK, status);
+		return -EIO;
 	}
 
 	return SUCCESSFULL_MX4_RW;
-
-fail_sync:
-	mx4_spi_sync(spi);
-	return val;
 }
 
 static int mx4_spi_wakup_pic(struct mx4_spi_device *mx4)
@@ -313,6 +268,8 @@ static int mx4_spi_wakup_pic(struct mx4_spi_device *mx4)
 	struct spi_device *spi = mx4->spi;
 	ktime_t start, end;
 	s64 actual_time;
+
+	dev_err(dev, "mx4_spi_wakup_pic");
 
 	for(i = 0; i < 8; ++i)
 	{
@@ -329,13 +286,15 @@ static int mx4_spi_wakup_pic(struct mx4_spi_device *mx4)
 	val = mx4_wait_to_receive_response(spi);
 	end = ktime_get();
 	actual_time = ktime_to_ns(ktime_sub(end, start));
+	dev_err(dev, "co-cpu responded within %lld nano seconds. and..",
+			(long long)actual_time);
 
 	if (val == 0) {
 		dev_err(dev, "wakeup pic no sync received\n");
 		return -ETIMEDOUT;
 	}
 
-	dev_info(dev, "co-cpu responded within %lld nano seconds\n",
+	dev_err(dev, "co-cpu responded within %lld nano seconds\n",
 			(long long)actual_time);
 
 	return 0;

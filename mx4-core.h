@@ -30,6 +30,7 @@
 
 
 #define MX4_LINUX_KERNEL_SPACE 1 //to *_spi_protocol_defs.h
+#define BUFFER_ARRAY_LENGTH 32
 
 #include "mx4_spi_protocol_defs.h"
 
@@ -74,7 +75,7 @@ struct mx4_irq {
 
 struct mx4_spi_device
 {
-	char dma_safe_buffer[32]; //Use this DMA safe buffer for SPI usage
+	char dma_safe_buffer[BUFFER_ARRAY_LENGTH]; //Use this DMA safe buffer for SPI usage
 	/* locks this struct data access and a r/w operation. */
 	struct mutex lock;
 
@@ -109,8 +110,8 @@ struct mx4_spi_device
 };
 
 #define MX4_IO_DRV_NAME	"mx4_io_spi"
-#define DRIVER_VERSION	"2.3"
-
+#define DRIVER_VERSION	"2.5"
+#define DEBUG "1"
 #define MX4_IO_SUSPEND_RESUME_MAX_TRY	3
 
 #define SUCCESSFULL_MX4_RW 4

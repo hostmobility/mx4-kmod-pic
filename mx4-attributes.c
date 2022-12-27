@@ -144,7 +144,7 @@ static DEVICE_ATTR (name, S_IRUGO, read_##name, NULL);
 def_write_integer_func_call (write_##name, type_code);\
 static DEVICE_ATTR (name, S_IWUSR | S_IWGRP, NULL, write_##name);
 
-
+// unsafe we read old value...
 #define def_read_write_integer_attr(name, type_code)\
 def_read_integer_func_call (read_##name, type_code);\
 def_write_integer_func_call (write_##name, type_code);\
