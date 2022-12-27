@@ -129,7 +129,7 @@ static ssize_t write_attribute_function_name (struct device *dev,\
 	ret = mx4_spi_write_value (mx4->spi, value, type);\
 	mutex_unlock (&mx4->lock);\
 \
-	return (ret == SUCCESSFULL_MX4_RW) ? count : -EPERM;\
+	return (ret == SUCCESSFULL_MX4_RW) ? count : ret;\
 }
 
 
