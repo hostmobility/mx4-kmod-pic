@@ -127,6 +127,7 @@ ssize_t mx4_spi_read_value (struct spi_device *spi, u32* value, u8 type)
 	u8 primitive, type_received, status, checksum;
 
 	if(mx4->suspended){
+		dev_err(dev, "mx4_spi_read_value: Mx4 is in suspended");
 		return -EBUSY;
 	}
 
@@ -141,6 +142,7 @@ ssize_t mx4_spi_read_value (struct spi_device *spi, u32* value, u8 type)
 	if (mx4_spi_communication(spi, MX4_SPI_READ_REQUEST_SIZE) != SUCCESSFULL_MX4_RW)
 	{
 		dev_err(dev, "mx4_spi_read_value failed\n");
+		/*Input/output error.*/
 		return -EIO;
 	}
 
@@ -209,6 +211,7 @@ ssize_t mx4_spi_write_value(struct spi_device *spi, u32 value, u8 type)
 	struct device *dev = &spi->dev;
 
 	if(mx4->suspended){
+		dev_err(dev, "mx4_spi_write_value: Mx4 is in suspended");
 		return -EBUSY;
 	}
 
