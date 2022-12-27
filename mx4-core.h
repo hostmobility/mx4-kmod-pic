@@ -110,8 +110,8 @@ struct mx4_spi_device
 };
 
 #define MX4_IO_DRV_NAME	"mx4_io_spi"
-#define DRIVER_VERSION	"2.5"
-#define DEBUG "1"
+#define DRIVER_VERSION	"2.6"
+//#define DEBUG "1"
 #define MX4_IO_SUSPEND_RESUME_MAX_TRY	3
 
 #define SUCCESSFULL_MX4_RW 4

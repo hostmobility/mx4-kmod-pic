@@ -77,6 +77,8 @@ int mx4_spi_communication (struct spi_device *spi, int length)
 	int val;
 	struct mx4_spi_device* mx4 = dev_get_drvdata(&spi->dev);
 	struct device *dev = &spi->dev;
+	int rc;
+
 #ifdef DEBUG
 	ktime_t start, end;
 	s64 actual_time;
@@ -85,14 +87,47 @@ int mx4_spi_communication (struct spi_device *spi, int length)
 
 	dev_dbg(&spi->dev, "communication: read request bytes: %02x %02x\n", mx4->dma_safe_buffer[0], mx4->dma_safe_buffer[1]);
 
-	val = mx4_spi_write (spi, mx4->dma_safe_buffer, length);
+	while (1) 
+	{
 
-	if (val < 0) {
-		dev_err(dev, "communication request transfer failed: %d cmd = 0x%02x\n",
-			val, mx4->dma_safe_buffer[1]);
-		return val;
+		val = mx4_spi_write (spi, mx4->dma_safe_buffer, length);
+
+		if (val < 0) {
+			dev_err(dev, "communication request transfer failed: %d cmd = 0x%02x\n",
+				val, mx4->dma_safe_buffer[1]);
+			return val;
+		}
+
+		//# mx4_wait_to_receive_response refactor..
+		rc = wait_event_interruptible_timeout(mx4->spi_response_sync.queue,
+					(mx4->spi_response_sync.has_data == 1), HZ/8); //100/8= 32milisec
+
+		if (rc > 0 && mx4->spi_response_sync.has_data) {
+			// ok
+			val = mx4->spi_response_sync.has_data;
+			// clear if we gets data otherwise counter++ each spi wait timeout and let it rollover.
+			mx4->pic_wait_error_counter = 0;
+			break;
+		} else if (!rc) {
+			// timeout and resend until more than 10 tries has been performed.
+			mx4->pic_wait_error_counter++;
+			dev_dbg(&mx4->spi->dev, "spi wait timeout, count: %u\n", mx4->pic_wait_error_counter);
+			val = 0;
+			if(mx4->pic_wait_error_counter < 10)
+			{
+				mx4->spi_response_sync.has_data = 0;
+			} else {
+				dev_err(&mx4->spi->dev, "spi wait timeout, count: %u\n", mx4->pic_wait_error_counter);
+				break;
+			}
+		} else {
+			dev_err(&mx4->spi->dev, "spi wait error rc=%d has_data=%d\n",
+				rc, mx4->spi_response_sync.has_data);
+			val = 0;
+			break;
+		}
 	}
-	val = mx4_wait_to_receive_response (spi);
+	mx4->spi_response_sync.has_data = 0;
 
 #ifdef DEBUG
 	end = ktime_get();
@@ -100,6 +135,8 @@ int mx4_spi_communication (struct spi_device *spi, int length)
 	if (val == 0) {
 		dev_err(dev, "communication: co-cpu no response received %lld nano seconds.",(long long)actual_time);
 	}
+	else
+		dev_err(dev, "communication: co-cpu OK received %lld nano seconds.",(long long)actual_time);
 #endif
 
 	if (val == 0) {
