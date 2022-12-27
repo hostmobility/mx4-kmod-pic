@@ -192,7 +192,12 @@ ssize_t mx4_spi_read_value (struct spi_device *spi, u32* value, u8 type)
 		checksum
 		)) {
 		dev_err(dev, "checksum failed, try again\n");
-		goto parse_error;
+		dev_err(dev, "read response bytes: %02x %02x %02x %02x%02x%02x%02x %02x \n",
+		 	mx4->dma_safe_buffer[0],  mx4->dma_safe_buffer[1],  mx4->dma_safe_buffer[2],  mx4->dma_safe_buffer[3],
+		 	mx4->dma_safe_buffer[4],  mx4->dma_safe_buffer[5],  mx4->dma_safe_buffer[6],  mx4->dma_safe_buffer[7]);
+		dev_err(dev, "read response parse error. cmd = 0x%02x\n", type);
+		mx4_spi_sync (spi);
+		return -EINVAL;
 	}
 
 	return  SUCCESSFULL_MX4_RW;
@@ -237,7 +242,7 @@ ssize_t mx4_spi_write_value(struct spi_device *spi, u32 value, u8 type)
 
 	if (mx4->dma_safe_buffer[MX4_SPI_WRITE_RESPONSE_SERVICE_PRIMITIVE_OFFSET] !=  MX4_SPI_WRITE_RESPONSE) {
 		dev_err(dev, "write service doesn't match: expected: 0x%02x, "
-			"received: 0x%02x\n", MX4_SPI_WRITE_RESPONSE, primitive);
+			"received: 0x%02x\n", MX4_SPI_WRITE_RESPONSE, mx4->dma_safe_buffer[MX4_SPI_WRITE_RESPONSE_SERVICE_PRIMITIVE_OFFSET]);
 		dev_err(dev, "write response bytes: %02x %02x %02x\n",
 		mx4->dma_safe_buffer[0], mx4->dma_safe_buffer[1], mx4->dma_safe_buffer[2]);
 		return -EINVAL;
@@ -253,7 +258,7 @@ ssize_t mx4_spi_write_value(struct spi_device *spi, u32 value, u8 type)
 
 	if (mx4->dma_safe_buffer[MX4_SPI_WRITE_RESPONSE_STATUS_OFFSET] !=  MX4_SPI_OK) {
 		dev_err(dev, "write status doesn't match: expected: 0x%02x, "
-			"received: 0x%02x\n", MX4_SPI_OK, status);
+			"received: 0x%02x\n", MX4_SPI_OK, mx4->dma_safe_buffer[MX4_SPI_WRITE_RESPONSE_STATUS_OFFSET]);
 		return -EIO;
 	}
 
