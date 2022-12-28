@@ -204,6 +204,11 @@ ssize_t mx4_spi_read_value (struct spi_device *spi, u32* value, u8 type)
 	int val;
 	struct mx4_spi_device* mx4 = dev_get_drvdata(&spi->dev);
 	struct device *dev = &spi->dev;
+#ifdef DEBUG
+	ktime_t start, end;
+	s64 actual_time;
+	start = ktime_get();
+#endif
 
 	if(mx4->suspended){
 		return -EBUSY;
@@ -221,6 +226,15 @@ ssize_t mx4_spi_read_value (struct spi_device *spi, u32* value, u8 type)
 	}
 
 	val = mx4_wait_to_receive_response (spi);
+
+#ifdef DEBUG
+	end = ktime_get();
+	actual_time = ktime_to_ns(ktime_sub(end, start));
+	if (val == 0) {
+		dev_err(dev, "read: co-cpu no response received %lld nano seconds.",(long long)actual_time);
+	}else
+		dev_err(dev, "read: co-cpu OK received %lld nano seconds.",(long long)actual_time);
+#endif
 
 	if (val == 0) {
 		dev_err(dev, "read timeout: no response received. cmd = 0x%02x\n",
@@ -257,7 +271,11 @@ ssize_t mx4_spi_write_value(struct spi_device *spi, u32 value, u8 type)
 	int val;
 	struct mx4_spi_device* mx4 = dev_get_drvdata(&spi->dev);
 	struct device *dev = &spi->dev;
-
+#ifdef DEBUG
+	ktime_t start, end;
+	s64 actual_time;
+	start = ktime_get();
+#endif
 	if (mx4->suspended) {
 		return -EBUSY;
 	}
@@ -274,6 +292,14 @@ ssize_t mx4_spi_write_value(struct spi_device *spi, u32 value, u8 type)
 	}
 
 	val = mx4_wait_to_receive_response(spi);
+#ifdef DEBUG
+	end = ktime_get();
+	actual_time = ktime_to_ns(ktime_sub(end, start));
+	if (val == 0) {
+		dev_err(dev, "write: co-cpu no response received %lld nano seconds.",(long long)actual_time);
+	}else
+		dev_err(dev, "write: co-cpu OK received %lld nano seconds.",(long long)actual_time);
+#endif
 
 	if (val == 0) {
 		dev_err(dev, "write timeout: no response received. cmd = 0x%02x\n",
