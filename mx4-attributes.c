@@ -150,6 +150,11 @@ def_read_integer_func_call (read_##name, type_code);\
 def_write_integer_func_call (write_##name, type_code);\
 static DEVICE_ATTR (name, S_IRUGO | S_IWUSR | S_IWGRP, read_##name, write_##name);
 
+#define def_write_read_integer_attr(name, type_code)\
+def_write_integer_func_call (write_##name, type_code);\
+def_read_integer_func_call (read_##name, type_code);\
+static DEVICE_ATTR (name, S_IRUGO | S_IWUSR | S_IWGRP, read_##name, write_##name);
+
 def_write_integer_attr(debug_k_line, PROT_TYPE_DEBUG_K_LINE);
 
 def_read_integer_attr (analog_1, PROT_TYPE_INPUT_ANALOG_1);
@@ -158,10 +163,10 @@ def_read_integer_attr (analog_3, PROT_TYPE_INPUT_ANALOG_3);
 def_read_integer_attr (analog_4, PROT_TYPE_INPUT_ANALOG_4);
 def_read_integer_attr (analog_5, PROT_TYPE_INPUT_ANALOG_5);
 
-def_read_write_integer_attr (analog_out_1, PROT_TYPE_ANALOG_OUT_1);
-def_read_write_integer_attr (analog_out_2, PROT_TYPE_ANALOG_OUT_2);
-def_read_write_integer_attr (analog_out_3, PROT_TYPE_ANALOG_OUT_3);
-def_read_write_integer_attr (analog_out_4, PROT_TYPE_ANALOG_OUT_4);
+def_write_read_integer_attr (analog_out_1, PROT_TYPE_ANALOG_OUT_1);
+def_write_read_integer_attr (analog_out_2, PROT_TYPE_ANALOG_OUT_2);
+def_write_read_integer_attr (analog_out_3, PROT_TYPE_ANALOG_OUT_3);
+def_write_read_integer_attr (analog_out_4, PROT_TYPE_ANALOG_OUT_4);
 
 def_read_integer_attr (input_voltage, PROT_TYPE_INPUT_VOLTAGE);
 def_read_integer_attr (input_voltage_2, PROT_TYPE_INPUT_VOLTAGE_2);
@@ -171,124 +176,124 @@ def_read_integer_attr (start_signal, PROT_TYPE_INPUT_START_SIGNAL);
 def_read_integer_attr (super_cap, PROT_TYPE_INPUT_SUPER_CAP);
 def_read_integer_attr (fuse, PROT_TYPE_INPUT_FUSE);
 
-def_read_write_integer_attr (analog_1_calibration_u,
+def_write_read_integer_attr (analog_1_calibration_u,
 	PROT_TYPE_CALIBRATION_ANALOG_1);
-def_read_write_integer_attr (analog_2_calibration_u,
+def_write_read_integer_attr (analog_2_calibration_u,
 	PROT_TYPE_CALIBRATION_ANALOG_2);
-def_read_write_integer_attr (analog_3_calibration_u,
+def_write_read_integer_attr (analog_3_calibration_u,
 	PROT_TYPE_CALIBRATION_ANALOG_3);
-def_read_write_integer_attr (analog_4_calibration_u,
+def_write_read_integer_attr (analog_4_calibration_u,
 	PROT_TYPE_CALIBRATION_ANALOG_4);
-def_read_write_integer_attr (analog_5_calibration_u,
+def_write_read_integer_attr (analog_5_calibration_u,
 	PROT_TYPE_CALIBRATION_ANALOG_5);
 
-def_read_write_integer_attr (analog_out_1_calibration_u,
+def_write_read_integer_attr (analog_out_1_calibration_u,
 	PROT_TYPE_CALIBRATION_OUT_1);
-def_read_write_integer_attr (analog_out_2_calibration_u,
+def_write_read_integer_attr (analog_out_2_calibration_u,
 	PROT_TYPE_CALIBRATION_OUT_2);
-def_read_write_integer_attr (analog_out_3_calibration_u,
+def_write_read_integer_attr (analog_out_3_calibration_u,
 	PROT_TYPE_CALIBRATION_OUT_3);
-def_read_write_integer_attr (analog_out_4_calibration_u,
+def_write_read_integer_attr (analog_out_4_calibration_u,
 	PROT_TYPE_CALIBRATION_OUT_4);
 
 
-def_read_write_integer_attr (legacy_input_voltage_a_calibration_u,
+def_write_read_integer_attr (legacy_input_voltage_a_calibration_u,
 	PROT_TYPE_LEGACY_INPUT_VOLTAGE_CALIBRATION_A);
-def_read_write_integer_attr (legacy_input_voltage_b_calibration_u,
+def_write_read_integer_attr (legacy_input_voltage_b_calibration_u,
 	PROT_TYPE_LEGACY_INPUT_VOLTAGE_CALIBRATION_B);
 
-def_read_write_integer_attr (input_voltage_calibration_u,
+def_write_read_integer_attr (input_voltage_calibration_u,
 	PROT_TYPE_INPUT_VOLTAGE_CALIBRATION);
-def_read_write_integer_attr (input_voltage_2_calibration_u,
+def_write_read_integer_attr (input_voltage_2_calibration_u,
 	PROT_TYPE_INPUT_VOLTAGE_2_CALIBRATION);
-def_read_write_integer_attr (input_temperature_calibration_u,
+def_write_read_integer_attr (input_temperature_calibration_u,
 	PROT_TYPE_TEMP_CALIBRATION);
-def_read_write_integer_attr (input_battery_calibration_u,
+def_write_read_integer_attr (input_battery_calibration_u,
 	PROT_TYPE_INPUT_BATTERY_CALIBRATION);
-def_read_write_integer_attr (start_signal_calibration_u,
+def_write_read_integer_attr (start_signal_calibration_u,
 	PROT_TYPE_CALIBRATION_START_SIGNAL);
-def_read_write_integer_attr (super_cap_calibration_u,
+def_write_read_integer_attr (super_cap_calibration_u,
 	PROT_TYPE_CALIBRATION_SUPER_CAP);
-def_read_write_integer_attr (fuse_calibration_u,
+def_write_read_integer_attr (fuse_calibration_u,
 	PROT_TYPE_CALIBRATION_FUSE);
 
-def_read_write_integer_attr (analog_1_offset, PROT_TYPE_OFFSET_ANALOG1);
-def_read_write_integer_attr (analog_2_offset, PROT_TYPE_OFFSET_ANALOG2);
-def_read_write_integer_attr (analog_3_offset, PROT_TYPE_OFFSET_ANALOG3);
-def_read_write_integer_attr (analog_4_offset, PROT_TYPE_OFFSET_ANALOG4);
-def_read_write_integer_attr (analog_5_offset, PROT_TYPE_OFFSET_ANALOG5);
+def_write_read_integer_attr (analog_1_offset, PROT_TYPE_OFFSET_ANALOG1);
+def_write_read_integer_attr (analog_2_offset, PROT_TYPE_OFFSET_ANALOG2);
+def_write_read_integer_attr (analog_3_offset, PROT_TYPE_OFFSET_ANALOG3);
+def_write_read_integer_attr (analog_4_offset, PROT_TYPE_OFFSET_ANALOG4);
+def_write_read_integer_attr (analog_5_offset, PROT_TYPE_OFFSET_ANALOG5);
 
-def_read_write_integer_attr (analog_out_1_offset, PROT_TYPE_OFFSET_OUT_1);
-def_read_write_integer_attr (analog_out_2_offset, PROT_TYPE_OFFSET_OUT_2);
-def_read_write_integer_attr (analog_out_3_offset, PROT_TYPE_OFFSET_OUT_3);
-def_read_write_integer_attr (analog_out_4_offset, PROT_TYPE_OFFSET_OUT_4);
+def_write_read_integer_attr (analog_out_1_offset, PROT_TYPE_OFFSET_OUT_1);
+def_write_read_integer_attr (analog_out_2_offset, PROT_TYPE_OFFSET_OUT_2);
+def_write_read_integer_attr (analog_out_3_offset, PROT_TYPE_OFFSET_OUT_3);
+def_write_read_integer_attr (analog_out_4_offset, PROT_TYPE_OFFSET_OUT_4);
 
-def_read_write_integer_attr (start_signal_offset,
+def_write_read_integer_attr (start_signal_offset,
 	PROT_TYPE_OFFSET_START_SIGNAL);
-def_read_write_integer_attr (input_voltage_offset,
+def_write_read_integer_attr (input_voltage_offset,
 	PROT_TYPE_INPUT_VOLTAGE_OFFSET);
-def_read_write_integer_attr (input_voltage_2_offset,
+def_write_read_integer_attr (input_voltage_2_offset,
 	PROT_TYPE_INPUT_VOLTAGE_OFFSET_2);
-def_read_write_integer_attr (input_battery_offset,
+def_write_read_integer_attr (input_battery_offset,
 	PROT_TYPE_INPUT_BATTERY_OFFSET);
-def_read_write_integer_attr (super_cap_offset, PROT_TYPE_SUPER_CAP_OFFSET);
-def_read_write_integer_attr (fuse_offset, PROT_TYPE_FUSE_OFFSET);
+def_write_read_integer_attr (super_cap_offset, PROT_TYPE_SUPER_CAP_OFFSET);
+def_write_read_integer_attr (fuse_offset, PROT_TYPE_FUSE_OFFSET);
 
-def_read_write_integer_attr (led_2, PROT_TYPE_LED_2);
-def_read_write_integer_attr (led_3, PROT_TYPE_LED_3);
-def_read_write_integer_attr (led_4, PROT_TYPE_LED_4);
-def_read_write_integer_attr (buzzer, PROT_TYPE_BUZZER);
+def_write_read_integer_attr (led_2, PROT_TYPE_LED_2);
+def_write_read_integer_attr (led_3, PROT_TYPE_LED_3);
+def_write_read_integer_attr (led_4, PROT_TYPE_LED_4);
+def_write_read_integer_attr (buzzer, PROT_TYPE_BUZZER);
 
-def_read_write_integer_attr (c3_counter, PROT_TYPE_C3_COUNTER);
+def_write_read_integer_attr (c3_counter, PROT_TYPE_C3_COUNTER);
 
-def_read_write_integer_attr(pin_select_can2_h, PROT_TYPE_PS_CAN2H);
-def_read_write_integer_attr(pin_select_can2_l, PROT_TYPE_PS_CAN2L);
-def_read_write_integer_attr(pin_select_can3_h, PROT_TYPE_PS_CAN3H);
-def_read_write_integer_attr(pin_select_can3_l, PROT_TYPE_PS_CAN3L);
-def_read_write_integer_attr(pin_select_k_line, PROT_TYPE_PS_K_LINE);
-def_read_write_integer_attr(pin_select_l_line, PROT_TYPE_PS_L_LINE);
-def_read_write_integer_attr(pin_select_register, PROT_TYPE_PS_REGISTER);
+def_write_read_integer_attr(pin_select_can2_h, PROT_TYPE_PS_CAN2H);
+def_write_read_integer_attr(pin_select_can2_l, PROT_TYPE_PS_CAN2L);
+def_write_read_integer_attr(pin_select_can3_h, PROT_TYPE_PS_CAN3H);
+def_write_read_integer_attr(pin_select_can3_l, PROT_TYPE_PS_CAN3L);
+def_write_read_integer_attr(pin_select_k_line, PROT_TYPE_PS_K_LINE);
+def_write_read_integer_attr(pin_select_l_line, PROT_TYPE_PS_L_LINE);
+def_write_read_integer_attr(pin_select_register, PROT_TYPE_PS_REGISTER);
 
-def_read_write_integer_attr (ctrl_wakeup_sources_register,
+def_write_read_integer_attr (ctrl_wakeup_sources_register,
 	PROT_TYPE_WAKEUP_SOURCE_REGISTER);
-def_read_write_integer_attr (ctrl_gpio_suspend_state,
+def_write_read_integer_attr (ctrl_gpio_suspend_state,
 	PROT_TYPE_DIGITAL_OUTPUT_SUSPEND_STATE);
 
-def_read_write_integer_attr (input_voltage_threshold_high,
+def_write_read_integer_attr (input_voltage_threshold_high,
 	PROT_TYPE_INPUT_VOLTAGE_THRESHOLD_HIGH);
-def_read_write_integer_attr (input_voltage_threshold_low,
+def_write_read_integer_attr (input_voltage_threshold_low,
 	PROT_TYPE_INPUT_VOLTAGE_THRESHOLD_LOW);
-def_read_write_integer_attr (input_battery_threshold_high,
+def_write_read_integer_attr (input_battery_threshold_high,
 	PROT_TYPE_INPUT_BATTERY_THRESHOLD_HIGH);
-def_read_write_integer_attr (input_battery_threshold_low,
+def_write_read_integer_attr (input_battery_threshold_low,
 	PROT_TYPE_INPUT_BATTERY_THRESHOLD_LOW);
-def_read_write_integer_attr (analog_1_threshold_high,
+def_write_read_integer_attr (analog_1_threshold_high,
 	PROT_TYPE_INPUT_ANALOG1_THRESHOLD_HIGH);
-def_read_write_integer_attr (analog_1_threshold_low,
+def_write_read_integer_attr (analog_1_threshold_low,
 	PROT_TYPE_INPUT_ANALOG1_THRESHOLD_LOW);
-def_read_write_integer_attr (analog_2_threshold_high,
+def_write_read_integer_attr (analog_2_threshold_high,
 	PROT_TYPE_INPUT_ANALOG2_THRESHOLD_HIGH);
-def_read_write_integer_attr (analog_2_threshold_low,
+def_write_read_integer_attr (analog_2_threshold_low,
 	PROT_TYPE_INPUT_ANALOG2_THRESHOLD_LOW);
-def_read_write_integer_attr (analog_3_threshold_high,
+def_write_read_integer_attr (analog_3_threshold_high,
 	PROT_TYPE_INPUT_ANALOG3_THRESHOLD_HIGH);
-def_read_write_integer_attr (analog_3_threshold_low,
+def_write_read_integer_attr (analog_3_threshold_low,
 	PROT_TYPE_INPUT_ANALOG3_THRESHOLD_LOW);
-def_read_write_integer_attr (analog_4_threshold_high,
+def_write_read_integer_attr (analog_4_threshold_high,
 	PROT_TYPE_INPUT_ANALOG4_THRESHOLD_HIGH);
-def_read_write_integer_attr (analog_4_threshold_low,
+def_write_read_integer_attr (analog_4_threshold_low,
 	PROT_TYPE_INPUT_ANALOG4_THRESHOLD_LOW);
-def_read_write_integer_attr (analog_5_threshold_high,
+def_write_read_integer_attr (analog_5_threshold_high,
 	PROT_TYPE_INPUT_ANALOG5_THRESHOLD_HIGH);
-def_read_write_integer_attr (analog_5_threshold_low,
+def_write_read_integer_attr (analog_5_threshold_low,
 	PROT_TYPE_INPUT_ANALOG5_THRESHOLD_LOW);
-def_read_write_integer_attr (start_signal_threshold_high,
+def_write_read_integer_attr (start_signal_threshold_high,
 	PROT_TYPE_INPUT_START_SIGNAL_THRESHOLD_HIGH);
-def_read_write_integer_attr (start_signal_threshold_low,
+def_write_read_integer_attr (start_signal_threshold_low,
 	PROT_TYPE_INPUT_START_SIGNAL_THRESHOLD_LOW);
-def_read_write_integer_attr (fuse_threshold_high,
+def_write_read_integer_attr (fuse_threshold_high,
 	PROT_TYPE_INPUT_FUSE_THRESHOLD_HIGH);
-def_read_write_integer_attr (fuse_threshold_low,
+def_write_read_integer_attr (fuse_threshold_low,
 	PROT_TYPE_INPUT_FUSE_THRESHOLD_LOW);
 
 def_write_integer_attr (ctrl_goto_sleep, PROT_TYPE_CTRL_GO_TO_SLEEP);
@@ -296,45 +301,45 @@ def_write_integer_attr (ctrl_goto_sleep, PROT_TYPE_CTRL_GO_TO_SLEEP);
 def_read_integer_attr (ctrl_version, PROT_TYPE_CTRL_VERSION);
 def_read_integer_attr (ctrl_bl_version, PROT_TYPE_CTRL_BL_VERSION);
 def_read_integer_attr (ctrl_wakeup_cause, PROT_TYPE_WAKEUP_CAUSE);
-def_read_write_integer_attr(ctrl_system_state, PROT_TYPE_CTRL_SYSTEM_STATE);
-def_read_write_integer_attr(ctrl_power_state, PROT_TYPE_CTRL_POWER_STATE);
-def_read_write_integer_attr(ctrl_led_power_off, PROT_TYPE_CTRL_LED_POWER_OFF);
-def_read_write_integer_attr (ctrl_pic_reset_cause, PROT_TYPE_PIC_RESET_CAUSE);
+def_write_read_integer_attr(ctrl_system_state, PROT_TYPE_CTRL_SYSTEM_STATE);
+def_write_read_integer_attr(ctrl_power_state, PROT_TYPE_CTRL_POWER_STATE);
+def_write_read_integer_attr(ctrl_led_power_off, PROT_TYPE_CTRL_LED_POWER_OFF);
+def_write_read_integer_attr (ctrl_pic_reset_cause, PROT_TYPE_PIC_RESET_CAUSE);
 
-def_read_write_integer_attr (ctrl_modem_on, PROT_TYPE_MODEM_ON);
+def_write_read_integer_attr (ctrl_modem_on, PROT_TYPE_MODEM_ON);
 def_read_integer_attr (ctrl_modem_status, PROT_TYPE_MODEM_STATUS);
-def_read_write_integer_attr (ctrl_modem_ign, PROT_TYPE_MODEM_IGN);
-def_read_write_integer_attr (ctrl_modem_emg, PROT_TYPE_MODEM_EMG);
+def_write_read_integer_attr (ctrl_modem_ign, PROT_TYPE_MODEM_IGN);
+def_write_read_integer_attr (ctrl_modem_emg, PROT_TYPE_MODEM_EMG);
 
-def_read_write_integer_attr (ctrl_j1708_enable, PROT_TYPE_CTRL_J1708_ENABLE);
-def_read_write_integer_attr (ctrl_rs485_enable, PROT_TYPE_CTRL_RS485_ENABLE);
-def_read_write_integer_attr (ctrl_rs422_mode, PROT_TYPE_CTRL_RS422_MODE);
-def_read_write_integer_attr (ctrl_rs422_loopback, PROT_TYPE_CTRL_RS422_LOOPBACK);
+def_write_read_integer_attr (ctrl_j1708_enable, PROT_TYPE_CTRL_J1708_ENABLE);
+def_write_read_integer_attr (ctrl_rs485_enable, PROT_TYPE_CTRL_RS485_ENABLE);
+def_write_read_integer_attr (ctrl_rs422_mode, PROT_TYPE_CTRL_RS422_MODE);
+def_write_read_integer_attr (ctrl_rs422_loopback, PROT_TYPE_CTRL_RS422_LOOPBACK);
 
 def_write_integer_attr(ctrl_reset_pic_sw, PROT_TYPE_SW_RESET);
 
-def_read_write_integer_attr (ctrl_serial_nr, PROT_TYPE_CTRL_SERIAL);
-def_read_write_integer_attr (ctrl_hw_rev, PROT_TYPE_CTRL_HW_REV);
-def_read_write_integer_attr (ctrl_product_id, PROT_TYPE_CTRL_PRODUCT_ID);
-def_read_write_integer_attr(trap_location, PROT_TYPE_TRAP_LOCATION);
-def_read_write_integer_attr(trap_location_prev, PROT_TYPE_TRAP_LOCATION_PREV);
-def_read_write_integer_attr(trap_iec_trace, PROT_TYPE_TRAP_IEC_TRACE);
-def_read_write_integer_attr(trap_ifs_trace, PROT_TYPE_TRAP_IFS_TRACE);
+def_write_read_integer_attr (ctrl_serial_nr, PROT_TYPE_CTRL_SERIAL);
+def_write_read_integer_attr (ctrl_hw_rev, PROT_TYPE_CTRL_HW_REV);
+def_write_read_integer_attr (ctrl_product_id, PROT_TYPE_CTRL_PRODUCT_ID);
+def_write_read_integer_attr(trap_location, PROT_TYPE_TRAP_LOCATION);
+def_write_read_integer_attr(trap_location_prev, PROT_TYPE_TRAP_LOCATION_PREV);
+def_write_read_integer_attr(trap_iec_trace, PROT_TYPE_TRAP_IEC_TRACE);
+def_write_read_integer_attr(trap_ifs_trace, PROT_TYPE_TRAP_IFS_TRACE);
 
-def_read_write_integer_attr(ctrl_on_4v, PROT_TYPE_CTRL_ON_4V);
-def_read_write_integer_attr(ctrl_on_battery, PROT_TYPE_CTRL_ON_BATTERY);
-def_read_write_integer_attr(usb_port_otg, PROT_TYPE_USB_OTG);
-def_read_write_integer_attr (rtc_year, PROT_TYPE_RTC_YEAR);
-def_read_write_integer_attr (rtc_month, PROT_TYPE_RTC_MONTH);
-def_read_write_integer_attr (rtc_day, PROT_TYPE_RTC_DAY);
-def_read_write_integer_attr (rtc_dow, PROT_TYPE_RTC_DOW);
-def_read_write_integer_attr (rtc_hour, PROT_TYPE_RTC_HOURS);
-def_read_write_integer_attr (rtc_minute, PROT_TYPE_RTC_MINUTES);
-def_read_write_integer_attr (rtc_second, PROT_TYPE_RTC_SECONDS);
+def_write_read_integer_attr(ctrl_on_4v, PROT_TYPE_CTRL_ON_4V);
+def_write_read_integer_attr(ctrl_on_battery, PROT_TYPE_CTRL_ON_BATTERY);
+def_write_read_integer_attr(usb_port_otg, PROT_TYPE_USB_OTG);
+def_write_read_integer_attr (rtc_year, PROT_TYPE_RTC_YEAR);
+def_write_read_integer_attr (rtc_month, PROT_TYPE_RTC_MONTH);
+def_write_read_integer_attr (rtc_day, PROT_TYPE_RTC_DAY);
+def_write_read_integer_attr (rtc_dow, PROT_TYPE_RTC_DOW);
+def_write_read_integer_attr (rtc_hour, PROT_TYPE_RTC_HOURS);
+def_write_read_integer_attr (rtc_minute, PROT_TYPE_RTC_MINUTES);
+def_write_read_integer_attr (rtc_second, PROT_TYPE_RTC_SECONDS);
 
-def_read_write_integer_attr (debug_data, PROT_TYPE_DEBUG_DATA);
+def_write_read_integer_attr (debug_data, PROT_TYPE_DEBUG_DATA);
 
-def_read_write_integer_attr (power_5v_perm, PROT_TYPE_POWER_ON_5V_PERM);
+def_write_read_integer_attr (power_5v_perm, PROT_TYPE_POWER_ON_5V_PERM);
 
 #define MX4_CONCAT_IMPL(a, b) a##b
 #define MX4_CONCAT(a, b) MX4_CONCAT_IMPL(a, b)
