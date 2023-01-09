@@ -357,8 +357,6 @@ static int mx4_spi_wakup_pic(struct mx4_spi_device *mx4)
 	int i;
 	struct device *dev = &mx4->spi->dev;
 	struct spi_device *spi = mx4->spi;
-	ktime_t start, end;
-	s64 actual_time;
 
 	for(i = 0; i < 8; ++i)
 	{
@@ -366,24 +364,16 @@ static int mx4_spi_wakup_pic(struct mx4_spi_device *mx4)
 	}
 
 	/* We send 8 bytes to make sure protocol overflows */
-	start = ktime_get();
 	val = mx4_spi_communication(spi, (MX4_SPI_WRITE_REQUEST_SIZE + 1) );
 
 	if (val < 0) {
 		dev_err(dev, "wakeup pic request transfer failed: %d\n", val);
 		return val;
 	}
-	end = ktime_get();
-	actual_time = ktime_to_ns(ktime_sub(end, start));
-
 	if (val == 0) {
 		dev_err(dev, "wakeup pic no sync received\n");
 		return -ETIMEDOUT;
 	}
-
-	dev_info(dev, "co-cpu responded within %lld nano seconds\n",
-			(long long)actual_time);
-
 	return 0;
 }
 
@@ -798,7 +788,10 @@ static int mx4_spi_suspend(struct device *dev)
 		return -ETIMEDOUT;
 	}
 
-	dev_info(dev, "Suspend succeeded after %d retries", cnt);
+	/*log ktime when enter suspend*/
+	mx4->time_start_suspend = ktime_get();
+
+	dev_info(dev, "Suspend succeeded after %d retries. Enter suspend at %lld nano second\n ", cnt, ktime_to_ns(mx4->time_start_suspend));
 
 	mx4->suspended = 1;
 	mx4->pic_suspended = 1;
@@ -823,6 +816,8 @@ static int mx4_spi_resume(struct device *dev)
 	struct mx4_spi_device* mx4  = dev_get_drvdata (dev);
 	struct spi_device *spi = mx4->spi;
 	int ret = 0, cnt = 0;
+	ktime_t end;
+	s64 actual_time;
 
 	dev_info(dev, "Leaving suspend state.");
 
@@ -849,8 +844,9 @@ static int mx4_spi_resume(struct device *dev)
 
 		if(cnt == MX4_IO_SUSPEND_RESUME_MAX_TRY)
 			goto error;
-
-		dev_info(dev, "Wake-up succeeded after %d retries", cnt);
+		end = ktime_get();
+		actual_time = ktime_to_ns(ktime_sub(end, mx4->time_start_suspend));
+		dev_info(dev, "Wake-up succeeded after %d retries\n. Resume system at %lld nano second.\n Suspend last for %lld nano seconds", cnt, ktime_to_ns(end), (long long)actual_time);
 	}
 
 	mx4->pic_suspended = 0;
