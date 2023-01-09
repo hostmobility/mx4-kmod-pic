@@ -107,10 +107,13 @@ struct mx4_spi_device
 	u8 pic_suspended;
 	u8 pic_wake_up;
 	u8 pic_wait_error_counter;
+
+	/*log time enter suspended*/
+	ktime_t time_start_suspend;
 };
 
 #define MX4_IO_DRV_NAME	"mx4_io_spi"
-#define DRIVER_VERSION	"2.4"
+#define DRIVER_VERSION	"3.2"
 //#define DEBUG "1"
 
 #define MX4_IO_SUSPEND_RESUME_MAX_TRY	3
