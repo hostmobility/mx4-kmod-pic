@@ -296,9 +296,9 @@ ssize_t mx4_spi_write_value(struct spi_device *spi, u32 value, u8 type)
 	end = ktime_get();
 	actual_time = ktime_to_ns(ktime_sub(end, start));
 	if (val == 0) {
-		dev_err(dev, "write: co-cpu no response received %lld nano seconds.",(long long)actual_time);
+		dev_err(dev, "write: co-cpu: no response received after %lld nano seconds.",(long long)actual_time);
 	}else
-		dev_err(dev, "write: co-cpu OK received %lld nano seconds.",(long long)actual_time);
+		dev_err(dev, "write: co-cpu: OK received after %lld nano seconds.",(long long)actual_time);
 #endif
 
 	if (val == 0) {
