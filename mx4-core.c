@@ -35,35 +35,6 @@
 
 #define MX4_SYNC_SLEEP_TIME_MS 500
 
-static inline int mx4_wait_to_receive_response (struct spi_device* spi)
-{
-	struct mx4_spi_device* mx4 = dev_get_drvdata(&spi->dev);
-	int ret, rc;
-
-    rc = wait_event_interruptible_timeout(mx4->spi_response_sync.queue,
-                 (mx4->spi_response_sync.has_data == 1), HZ/2);
-
-   	if (rc > 0 && mx4->spi_response_sync.has_data) {
-    	// ok
-    	ret = mx4->spi_response_sync.has_data;
-		// clear if we gets data otherwise counter++ each spi wait timeout and let it rollover.
-		mx4->pic_wait_error_counter = 0;
-   	} else if (!rc) {
-    	// timeout
-		mx4->pic_wait_error_counter++;
-    	dev_err(&mx4->spi->dev, "spi wait timeout, count: %u\n", mx4->pic_wait_error_counter);
-     	ret = 0;
-   	} else {
-    	dev_err(&mx4->spi->dev, "spi wait error rc=%d has_data=%d\n",
-    		rc, mx4->spi_response_sync.has_data);
-    	ret = 0;
-   	}
-
-   	mx4->spi_response_sync.has_data = 0;
-
-	return ret;
-}
-
 static void mx4_spi_sync (struct spi_device *spi)
 {
 	dev_err(&spi->dev, "Sleeping %d ms to sync up after parse error",
@@ -332,10 +303,9 @@ ssize_t mx4_spi_write_value(struct spi_device *spi, u32 value, u8 type)
 	end = ktime_get();
 	actual_time = ktime_to_ns(ktime_sub(end, start));
 	if (val == 0) {
-		dev_err(dev, "communication: co-cpu: no response received %lld nano seconds.",(long long)actual_time);
-	}
-	else
-		dev_err(dev, "communication: co-cpu: OK received after %lld nano seconds.",(long long)actual_time);
+		dev_err(dev, "write: co-cpu: no response received after %lld nano seconds.",(long long)actual_time);
+	}else
+		dev_err(dev, "write: co-cpu: OK received after %lld nano seconds.",(long long)actual_time);
 #endif
 
 	if (val == 0) {
@@ -394,15 +364,15 @@ static int mx4_spi_wakup_pic(struct mx4_spi_device *mx4)
 	{
 		mx4->dma_safe_buffer[i] = 0xff;
 	}
+
 	/* We send 8 bytes to make sure protocol overflows */
-	val = mx4_spi_write(spi, mx4->dma_safe_buffer, MX4_SPI_WRITE_REQUEST_SIZE + 1);
+	start = ktime_get();
+	val = mx4_spi_communication(spi, (MX4_SPI_WRITE_REQUEST_SIZE + 1) );
 
 	if (val < 0) {
 		dev_err(dev, "wakeup pic request transfer failed: %d\n", val);
 		return val;
 	}
-	start = ktime_get();
-	val = mx4_wait_to_receive_response(spi);
 	end = ktime_get();
 	actual_time = ktime_to_ns(ktime_sub(end, start));
 
@@ -823,8 +793,7 @@ static int mx4_spi_suspend(struct device *dev)
 	if(cnt == MX4_IO_SUSPEND_RESUME_MAX_TRY)
 		goto error;
 
-	ret = mx4_wait_to_receive_response(spi);
-	if (ret == 0) {
+	if (ret != SUCCESSFULL_MX4_RW) {
 		dev_err(dev, "timeout waiting for pic sleep sync\n");
 		return -ETIMEDOUT;
 	}
