@@ -137,6 +137,7 @@ ssize_t mx4_spi_read_value (struct spi_device *spi, u32* value, u8 type)
 	}
 
 	dev_dbg(dev, "request to read type: 0x%02x\n", type);
+	memset( mx4->dma_safe_buffer, '\0', sizeof(char)*BUFFER_ARRAY_LENGTH );
 
 	mx4->dma_safe_buffer[MX4_SPI_READ_REQUEST_SERVICE_PRIMITIVE_OFFSET] = MX4_SPI_READ_REQUEST;
 	mx4->dma_safe_buffer[MX4_SPI_READ_REQUEST_RELATED_VALUE_OFFSET] = type;
@@ -228,6 +229,7 @@ ssize_t mx4_spi_write_value(struct spi_device *spi, u32 value, u8 type)
 	}
 
 	dev_dbg(dev, "request to write type: 0x%02x\n", type);
+	memset( mx4->dma_safe_buffer, '\0', sizeof(char)*BUFFER_ARRAY_LENGTH );
 
 	*((u8*) (mx4->dma_safe_buffer +
 		MX4_SPI_WRITE_REQUEST_SERVICE_PRIMITIVE_OFFSET)) = MX4_SPI_WRITE_REQUEST;
