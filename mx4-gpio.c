@@ -39,7 +39,7 @@ static const struct mx4_gpio mx4_gpios[] = {
 	{PROT_TYPE_S_DIGITAL_OUT_2, 8, "digital-out-2-sink", GPIOF_OUT_INIT_LOW},
 	{PROT_TYPE_S_DIGITAL_OUT_3, 9, "digital-out-3-sink", GPIOF_OUT_INIT_LOW},
 	{PROT_TYPE_S_DIGITAL_OUT_4, 10, "digital-out-4-sink", GPIOF_OUT_INIT_LOW},
-	{PROT_TYPE_S_DIGITAL_OUT_5, 11, "digital-out-5-sink", GPIOF_OUT_INIT_LOW},
+	{PROT_TYPE_DIGITAL_OUT_5, 11, "digital-out-5-sink", GPIOF_OUT_INIT_LOW},
 	{PROT_TYPE_S_DIGITAL_OUT_6, 12, "digital-out-6-source", GPIOF_OUT_INIT_LOW},
 	{PROT_TYPE_S_DIGITAL_OUT_7, 13, "digital-out-7-source", GPIOF_OUT_INIT_LOW},
 	{PROT_TYPE_DIG_OUT_EN, 14, "digital-out-en", GPIOF_OUT_INIT_LOW},
